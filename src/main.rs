@@ -35,7 +35,7 @@ fn main() {
                let entry = ServiceInfo::new(
                     prompt("Service :"),
                     prompt("Username :"),
-                    prompt("Password"),
+                    prompt("Password :"),
                );
                println!("Entry added successfully.");
                entry.write_to_file();
@@ -44,7 +44,7 @@ fn main() {
                 clr();
                 let services = read_passwords_from_file().unwrap_or_else(|err| {
                     eprintln!("Error reading passwords: {}", err);
-                    Vec::new();
+                    Vec::new()
                 });
                 for item in &services {
                     println!(
@@ -60,7 +60,7 @@ fn main() {
                 clr();
                 let services = read_passwords_from_file().unwrap_or_else(|err| {
                     eprintln!("Error reading passwords: {}", err);
-                    Vec::new();
+                    Vec::new()
                 });
                 let search = prompt("search :");
                 for item in &services{

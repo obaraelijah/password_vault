@@ -1,9 +1,7 @@
 use serde::{Deserialize, Serialize};
-use std::fs::File;
-use std::fs::OpenOptions;
-use std::io;
-use std::io::BufRead;
-use std::io::Write;
+use std::fs::{File, OpenOptions};
+use std::io::{self, BufRead, Write};
+
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ServiceInfo {
@@ -73,8 +71,21 @@ impl ServiceInfo {
     }
 }
 
-pub fn read_passwords_from_file() -> {
+pub fn read_passwords_from_file() -> Result<Vec<ServiceInfo>, io::Error> {
+    let file = File::open("passwords.json")?;
+    let reader = io::BufReader::new(file);
 
+    let mut services = Vec::new();
+
+    for line in reader.lines() {
+        if let Ok(json_string) = line {
+            match ServiceInfo::from_json(&json_string) {
+                Ok(service_info) => services.push(service_info),
+                Err(e) => eprintln!("Error parsing JSON: {}", e),
+            }
+        }
+    }
+    Ok(services)
 }
 
 pub fn prompt(prompt: &str) -> String {
@@ -82,7 +93,7 @@ pub fn prompt(prompt: &str) -> String {
     io::stdout().flush().unwrap();
 
     let mut input =  String::new();
-    i0::stdin().read_line(&mut input).unwrap();
+    io::stdin().read_line(&mut input).unwrap();
 
     input.trim().to_string()
 }

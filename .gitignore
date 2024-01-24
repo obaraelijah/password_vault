@@ -1,1 +1,3 @@
-target/
+/target
+passwords.json
+passwords.txt
