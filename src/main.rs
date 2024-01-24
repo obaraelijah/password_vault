@@ -1,21 +1,31 @@
 mod pentry;
+mod db;
 
+use db::*;
 use crate::pentry::prompt;
-use crate::pentry::read_passwords_from_file;
-use crate::pentry::ServiceInfo;
+// use crate::pentry::ServiceInfo;
 
+
+// function named clr which clears the terminal screen
+// It uses the [2J command which tells the terminal to clear the screen
 fn clr() {
     print!("{}[2J", 27 as char);
 }
 
 fn main() {
+
+    let conn = init_database().expect("Failed to initialize the database");
+
     clr();
     let ascii = r#" 
-    ___________    ______ ________  _  _____________  __| _/ ___  _______   __ __|  |_/  |_  
-    \____ \__  \  /  ___//  ___/\ \/ \/ /  _ \_  __ \/ __ |  \  \/ /\__  \ |  |  \  |\   __\ 
-    |  |_> > __ \_\___ \ \___ \  \     (  <_> )  | \/ /_/ |   \   /  / __ \|  |  /  |_|  |   
-    |   __(____  /____  >____  >  \/\_/ \____/|__|  \____ |    \_/  (____  /____/|____/__|   
-    |__|       \/     \/     \/                          \/              \/                  
+    ________  ________  ________   ________           ___      ___ ________  ___  ___  ___   _________   
+    |\   __  \|\   __  \|\   ____\ |\   ____\         |\  \    /  /|\   __  \|\  \|\  \|\  \ |\___   ___\ 
+    \ \  \|\  \ \  \|\  \ \  \___|_\ \  \___|_        \ \  \  /  / | \  \|\  \ \  \\\  \ \  \\|___ \  \_| 
+    \ \   ____\ \   __  \ \_____  \\ \_____  \        \ \  \/  / / \ \   __  \ \  \\\  \ \  \    \ \  \  
+     \ \  \___|\ \  \ \  \|____|\  \\|____|\  \        \ \    / /   \ \  \ \  \ \  \\\  \ \  \____\ \  \ 
+      \ \__\    \ \__\ \__\____\_\  \ ____\_\  \        \ \__/ /     \ \__\ \__\ \_______\ \_______\ \__\
+       \|__|     \|__|\|__|\_________\\_________\        \|__|/       \|__|\|__|\|_______|\|_______|\|__|
+                          \|_________\|_________|                                                        
     
     "#;          
     println!("{ascii}");
@@ -31,47 +41,54 @@ fn main() {
 
         match choice.trim() {
            "1" => {
-               clr();
-               let entry = ServiceInfo::new(
-                    prompt("Service :"),
-                    prompt("Username :"),
-                    prompt("Password :"),
-               );
-               println!("Entry added successfully.");
-               entry.write_to_file();
-           } 
+            clr();
+            let entry = ServiceInfo::new(
+                prompt("Service :"),
+                prompt("Username :"),
+                prompt("Password :"),
+            );
+            write_password_to_db(
+                &conn,
+                &entry.service,
+                &entry.username,
+                &entry.password,
+            )
+            .expect("Failed to write to the database");
+            println!("Entry added successfully.");
+
+           }
            "2" => {
                 clr();
-                let services = read_passwords_from_file().unwrap_or_else(|err| {
+                let services = read_passwords_from_db(&conn).unwrap_or_else(|err| {
                     eprintln!("Error reading passwords: {}", err);
                     Vec::new()
                 });
                 for item in &services {
                     println!(
-                        "service = {}
-                        - Username: {}
-                        - Password: {}",
+                        "Service = {}
+    - Username : {} 
+    - Password : {}",
                         item.service, item.username, item.password
-                    
                     );
                 }
            }
            "3" => {
                 clr();
-                let services = read_passwords_from_file().unwrap_or_else(|err| {
-                    eprintln!("Error reading passwords: {}", err);
-                    Vec::new()
-                });
-                let search = prompt("search :");
-                for item in &services{
-                    if item.service.as_str() == search.as_str() {
+                let search = prompt("Search by service name:");
+                match search_service_by_name(&conn, &search) {
+                    Ok(Some(entry)) => {
                         println!(
-                            "service = {}
-                            - Username: {}
-                            - Password: {}",
-                            item.service, item.username, item.password
-                        
-                        ); 
+                            "Service = {}
+                - Username : {} 
+                - Password : {:?}",
+                            entry.service, entry.username, entry.password
+                        );
+                    }
+                    Ok(None) => {
+                        println!("Service not found.");
+                    }
+                    Err(err) => {
+                        eprintln!("Error searching for service: {}", err);
                     }
                 }
            } 
