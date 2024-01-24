@@ -29,7 +29,7 @@ Rust Password Vault is a command-line password management tool written in Rust. 
 - Add new password entries with service name, username, and password.
 - List all stored entries.
 - Search for entries based on service name.
-- Securely stores passwords in a JSON file.
+- Securely stores passwords in a SQLITE database.
 
 ## 3. Dependencies <a name="dependencies"></a>
 
