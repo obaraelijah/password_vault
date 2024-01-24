@@ -73,7 +73,7 @@ The search option allows the user to input a service name to search for. It then
 
 To build and run the project, follow these steps:
 
-1. Clone the project from [https://github.com/akhilsharma90/rust-password-vault.git](https://github.com/akhilsharma90/rust-password-vault.git).
+1. Clone the project from [https://github.com/akhilsharma90/rust-password-vault.git]([https://github.com/akhilsharma90/rust-password-vault.git](https://github.com/obaraelijah/password_vault)).
 2. Navigate to the project directory in the terminal.
 3. Run `cargo build --release` to compile the project.
 4. Run `./target/release/rusty_vault` to execute the compiled binary.
